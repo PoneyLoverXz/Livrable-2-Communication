@@ -97,17 +97,17 @@ public class Connexion implements Runnable
 		catch(IOException ioe)
 		{
 			// Exception si le client n'est plus en train d'écrire
-			if(!ioe.getMessage().equals("Read timed out"))
+			/*if(!ioe.getMessage().equals("Read timed out"))
 				System.out.println(ioe);
 			else 
-			{
+			{*/
 				try{
 				Client.close();
 				}catch(IOException e){}
 				Distribuer(Alias + " vient de quitter la conversation");
 				Clients.remove(Client);
 				System.out.println("Client deconnecte");
-			}
+			//}
 		}
 	}
    

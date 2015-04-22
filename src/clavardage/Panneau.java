@@ -4,8 +4,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 
 public class Panneau extends JPanel {
+
+
+    public Socket socket;
     public Panneau() {
         setLayout(new GridLayout(0, 1)); // une seule colonne
 
@@ -46,8 +54,7 @@ public class Panneau extends JPanel {
         boutonConnexion.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ServeurClavardage app = new ServeurClavardage();
-                app.lancerServeur(50000, fieldPseudo.getText());
+                Connexion(fieldAdresse.getText());
             }
         });
 
@@ -64,4 +71,16 @@ public class Panneau extends JPanel {
         pan3.add(boutonQuitter);
         add(pan3);
     }
+
+    public void Connexion(String host)
+    {
+        try{
+            socket = new Socket(host, 50000);
+        }
+        catch(IOException ioe)
+        {
+
+        }
+    }
+
 }

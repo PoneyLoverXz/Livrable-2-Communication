@@ -70,5 +70,10 @@ public class ServeurClavardage
 	}
 	
 	// Main
+		public static void main(String[] args)
+		{
+			ServeurClavardage app = new ServeurClavardage();
+			app.lancerServeur(50000);
+		}
 	
 }
