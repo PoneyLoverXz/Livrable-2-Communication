@@ -4,24 +4,33 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.ExecutionException;
 
 public class Panneau extends JPanel {
 
+    JTextField fieldAdresse;
+    JTextField fieldPseudo;
+    JCheckBox cboxResterConnecter;
+    JTextArea zoneMessages;
+    JTextField fieldTexte;
 
     public Socket socket;
+    DataOutputStream dout;
+    DataInputStream din;
+    String UserName;
+    PrintWriter writer;
+    BufferedReader reader;
+
     public Panneau() {
         setLayout(new GridLayout(0, 1)); // une seule colonne
 
         // rangée 0
         JLabel labelAdresse = new JLabel("Adresse IP");
-        final JTextField fieldAdresse = new JTextField(16);
+        fieldAdresse = new JTextField(16);
         JLabel labelPseudo = new JLabel("Pseudo");
-        final JTextField fieldPseudo = new JTextField(16);
+        fieldPseudo = new JTextField(16);
         JCheckBox cboxResterConnecte = new JCheckBox("Rester connecté");
         JPanel pan0 = new JPanel();
         add(pan0);
@@ -32,7 +41,8 @@ public class Panneau extends JPanel {
         pan0.add(cboxResterConnecte);
 
         // rangée 1
-        final JTextArea zoneMessages = new JTextArea(20,40);
+        zoneMessages = new JTextArea(20,40);
+        zoneMessages.setEditable(false);
         JScrollPane zoneDefilement = new JScrollPane(zoneMessages);
         JPanel pan1 = new JPanel();
         add(pan0);
@@ -41,8 +51,14 @@ public class Panneau extends JPanel {
 
         // rangée 2
         JLabel labelTexte = new JLabel("Votre texte");
-        JTextField fieldTexte = new JTextField(40);
+        fieldTexte = new JTextField(40);
         JButton boutonEnvoyer = new JButton("Envoyer");
+        boutonEnvoyer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Envoyer();
+            }
+        });
         JPanel pan2 = new JPanel();
         pan2.add(labelTexte);
         pan2.add(fieldTexte);
@@ -70,17 +86,89 @@ public class Panneau extends JPanel {
         pan3.add(boutonConnexion);
         pan3.add(boutonQuitter);
         add(pan3);
+
+
+    }
+
+    private void Envoyer() {
+        SwingWorker worker = new SwingWorker() {
+            @Override
+            protected Object doInBackground() throws Exception {
+                try{
+                    writer = new PrintWriter(
+                            new OutputStreamWriter(
+                                    socket.getOutputStream() ));
+                    writer.println("[" + UserName + "]:" + fieldTexte.getText());
+                    fieldTexte.setText("");
+                    fieldTexte.requestFocusInWindow();
+                    zoneMessages.append(reader.readLine());
+                }
+                catch(IOException ioe)
+                {
+                    return false;
+                }
+                return true;
+            }
+
+            protected void done(){
+                Object statut;
+                try{
+                    statut = get();
+
+                    zoneMessages.append('\n' + "Statut: " + statut);
+                }
+                catch(InterruptedException e){
+
+                }
+                catch(ExecutionException e){
+
+                }
+            }
+        };
+
+
+        worker.execute();
     }
 
     public void Connexion(String host)
     {
-        try{
-            socket = new Socket(host, 50000);
-        }
-        catch(IOException ioe)
-        {
+        SwingWorker worker = new SwingWorker() {
+            @Override
+            protected Object doInBackground() throws Exception {
+                try{
+                    UserName =  fieldPseudo.getText();
+                    socket = new Socket("127.0.0.1", 50000);
 
-        }
+                    reader = new BufferedReader(
+                            new InputStreamReader(
+                                    socket.getInputStream() ));
+                    zoneMessages.append(reader.readLine());
+                }
+                catch(IOException ioe)
+                {
+                   return false;
+                }
+                return true;
+            }
+
+            protected void done(){
+               Object statut;
+                try{
+                    statut = get();
+
+                    zoneMessages.append("Fini." + statut);
+                }
+                catch(InterruptedException e){
+
+                }
+                catch(ExecutionException e){
+
+                }
+            }
+        };
+
+
+        worker.execute();
     }
 
 }

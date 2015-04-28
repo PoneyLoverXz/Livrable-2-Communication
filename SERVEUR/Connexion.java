@@ -48,14 +48,7 @@ public class Connexion implements Runnable
 				String ligne = null;
 					
 				 // Entrer l'Alias
-				 writer.println("Entrez votre nom : ");
-				 writer.flush();
-				 Alias = reader.readLine();
-				 if(Alias.length() > 8)
-					Alias = Alias.substring(0,8);
-				 else if(Alias.length() <= 0 )
-					Alias = Client.getRemoteSocketAddress().toString();
-				 Distribuer(Alias + " se joint a la conversation");
+				 Distribuer("Un client se joint a la conversation");
 				 
 				 // Attendre la lecture ou l'écriture tant que le client est connecté
 				while (!fini)
