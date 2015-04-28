@@ -86,41 +86,17 @@ public class Panneau extends JPanel {
         pan3.add(boutonConnexion);
         pan3.add(boutonQuitter);
         add(pan3);
-
-
     }
 
     private void Envoyer() {
         SwingWorker worker = new SwingWorker() {
             @Override
             protected Object doInBackground() throws Exception {
-                try{
-
-                    writer.println("[" + UserName + "]:" + fieldTexte.getText());
-                    fieldTexte.setText("");
-                    fieldTexte.requestFocusInWindow();
-                    zoneMessages.append(reader.readLine());
-                }
-                catch(IOException ioe)
-                {
-                    return false;
-                }
+                writer.println(fieldTexte.getText());
+                writer.flush();
+                fieldTexte.setText("");
+                fieldTexte.requestFocusInWindow();
                 return true;
-            }
-
-            protected void done(){
-                Object statut;
-                try{
-                    statut = get();
-
-                    zoneMessages.append('\n' + "Statut: " + statut);
-                }
-                catch(InterruptedException e){
-
-                }
-                catch(ExecutionException e){
-
-                }
             }
         };
 
@@ -143,8 +119,7 @@ public class Panneau extends JPanel {
                     reader = new BufferedReader(
                             new InputStreamReader(
                                     socket.getInputStream() ));
-                    Panneau p = new Panneau();
-                    p.listen();
+                    listen();
                 }
                 catch(IOException ioe)
                 {
@@ -179,9 +154,10 @@ public class Panneau extends JPanel {
             protected Object doInBackground() throws Exception {
                 try{
                     String s;
-                    while ((s = reader.readLine()) != null) {
-                        zoneMessages.insert(s + "\n", zoneMessages.getText().length());
+                    for(int i = 0; i < 1000; i++){
+                        zoneMessages.insert(reader.readLine() + "\n", zoneMessages.getText().length());
                         zoneMessages.setCaretPosition(zoneMessages.getText().length());
+                        Thread.sleep(1000);
                     }
                     writer.close();
                     reader.close();
@@ -197,6 +173,7 @@ public class Panneau extends JPanel {
                 return true;
             }
         };
+        worker.execute();
     }
 
 }

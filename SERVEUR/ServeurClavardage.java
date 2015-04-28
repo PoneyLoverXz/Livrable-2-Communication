@@ -36,7 +36,7 @@ public class ServeurClavardage
 				   try
 				   {
 					  client = socketServeur.accept();
-					  client.setSoTimeout(20*1000);
+					  client.setSoTimeout(5*60*1000);
 					  Connexion connexion = new Connexion(client);
 					  Thread t = new Thread( connexion );
 					  t.setDaemon(true);
