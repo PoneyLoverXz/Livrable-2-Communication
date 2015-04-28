@@ -2,6 +2,8 @@ package clavardage;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class Client {
     private static void creerEtAfficherIug() {

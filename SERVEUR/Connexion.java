@@ -46,9 +46,6 @@ public class Connexion implements Runnable
 									
 				boolean fini = false;
 				String ligne = null;
-					
-				 // Entrer l'Alias
-				 Distribuer("Un client se joint a la conversation");
 				 
 				 // Attendre la lecture ou l'écriture tant que le client est connecté
 				while (!fini)
@@ -61,7 +58,7 @@ public class Connexion implements Runnable
 					   {
 						  System.out.println("client deconnecte");
 						  fini = true;
-						  Distribuer(Alias + " vient de quitter la conversation");
+						  Distribuer("Un client vient de quitter la conversation");
 						  Clients.remove(Client);
 					   }
 					   else

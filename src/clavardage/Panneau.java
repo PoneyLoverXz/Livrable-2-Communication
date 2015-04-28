@@ -22,6 +22,7 @@ public class Panneau extends JPanel {
     String UserName;
     PrintWriter writer;
     BufferedReader reader;
+    boolean Connecte = false;
 
     public Panneau() {
         setLayout(new GridLayout(0, 1)); // une seule colonne
@@ -70,7 +71,7 @@ public class Panneau extends JPanel {
         boutonConnexion.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Connexion(fieldAdresse.getText());
+                Connexion();
             }
         });
 
@@ -88,30 +89,14 @@ public class Panneau extends JPanel {
         add(pan3);
     }
 
-    private void Envoyer() {
-        SwingWorker worker = new SwingWorker() {
-            @Override
-            protected Object doInBackground() throws Exception {
-                writer.println(fieldTexte.getText());
-                writer.flush();
-                fieldTexte.setText("");
-                fieldTexte.requestFocusInWindow();
-                return true;
-            }
-        };
-
-
-        worker.execute();
-    }
-
-    public void Connexion(String host)
+    public void Connexion()
     {
         SwingWorker worker = new SwingWorker() {
             @Override
             protected Object doInBackground() throws Exception {
                 try{
                     UserName =  fieldPseudo.getText();
-                    socket = new Socket("127.0.0.1", 50000);
+                    socket = new Socket(fieldAdresse.getText(), 50000);
                     writer = new PrintWriter(
                             new OutputStreamWriter(
                                     socket.getOutputStream() ));
@@ -119,6 +104,9 @@ public class Panneau extends JPanel {
                     reader = new BufferedReader(
                             new InputStreamReader(
                                     socket.getInputStream() ));
+                    Connecte = true;
+                    writer.println(UserName + " vient de se connecter");
+                    writer.flush();
                     listen();
                 }
                 catch(IOException ioe)
@@ -126,21 +114,6 @@ public class Panneau extends JPanel {
                    return false;
                 }
                 return true;
-            }
-
-            protected void done(){
-               Object statut;
-                try{
-                    statut = get();
-
-                    zoneMessages.append("Fini." + statut);
-                }
-                catch(InterruptedException e){
-
-                }
-                catch(ExecutionException e){
-
-                }
             }
         };
 
@@ -176,4 +149,19 @@ public class Panneau extends JPanel {
         worker.execute();
     }
 
+    private void Envoyer() {
+        SwingWorker worker = new SwingWorker() {
+            @Override
+            protected Object doInBackground() throws Exception {
+                writer.println(UserName+ ": " + fieldTexte.getText());
+                writer.flush();
+                fieldTexte.setText("");
+                fieldTexte.requestFocusInWindow();
+                return true;
+            }
+        };
+
+
+        worker.execute();
+    }
 }
