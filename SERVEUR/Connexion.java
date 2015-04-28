@@ -6,7 +6,6 @@ public class Connexion implements Runnable
 {
 	// Variables Client
 	public Socket Client;
-    public String Alias;
     public static ArrayList<Socket> Clients = new ArrayList<Socket>();
 	
 	// Concstructeur
@@ -53,23 +52,12 @@ public class Connexion implements Runnable
 					ligne = reader.readLine();
 					if(ligne != null)
 					{
-						// Distribuer la ligne si elle est valide
-					   if(ligne.length() == 0)
-					   {
-						  System.out.println("client deconnecte");
-						  fini = true;
-						  Distribuer("Un client vient de quitter la conversation");
-						  Clients.remove(Client);
-					   }
-					   else
-					   {
 						  if(ligne.length() >= 80)
 							 ligne = ligne.substring(0,80);
 						  
 						  if(!isAllWhitespace(ligne))
-							 Distribuer(Alias + " : " + ligne);
-					   }
-					}
+							 Distribuer(ligne);
+							}
 					else
 					{
 					   System.out.println("client deconnecte");
@@ -86,18 +74,11 @@ public class Connexion implements Runnable
 		}
 		catch(IOException ioe)
 		{
-			// Exception si le client n'est plus en train d'écrire
-			/*if(!ioe.getMessage().equals("Read timed out"))
-				System.out.println(ioe);
-			else 
-			{*/
 				try{
 				Client.close();
 				}catch(IOException e){}
-				Distribuer(Alias + " vient de quitter la conversation");
 				Clients.remove(Client);
 				System.out.println("Client deconnecte");
-			//}
 		}
 	}
    

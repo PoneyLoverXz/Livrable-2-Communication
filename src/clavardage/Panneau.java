@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.Inet4Address;
 import java.net.Socket;
 import java.util.concurrent.ExecutionException;
 
@@ -16,13 +17,16 @@ public class Panneau extends JPanel {
     JTextArea zoneMessages;
     JTextField fieldTexte;
 
-    public Socket socket;
+    Socket socket;
     DataOutputStream dout;
     DataInputStream din;
     String UserName;
     PrintWriter writer;
     BufferedReader reader;
     boolean Connecte = false;
+    boolean ResterConnecter = false;
+
+    int timeout = 5000 * 60;
 
     public Panneau() {
         setLayout(new GridLayout(0, 1)); // une seule colonne
@@ -30,9 +34,24 @@ public class Panneau extends JPanel {
         // rangée 0
         JLabel labelAdresse = new JLabel("Adresse IP");
         fieldAdresse = new JTextField(16);
+        fieldAdresse.setText("127.0.0.1");
         JLabel labelPseudo = new JLabel("Pseudo");
         fieldPseudo = new JTextField(16);
-        JCheckBox cboxResterConnecte = new JCheckBox("Rester connecté");
+        final JCheckBox cboxResterConnecte = new JCheckBox("Rester connecté");
+        cboxResterConnecte.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(cboxResterConnecte.isSelected())
+                {
+                    ResterConnecter = true;
+                    zoneMessages.append("ResterConnecter");
+                }
+                else
+                {
+                    ResterConnecter = false;
+                }
+            }
+        });
         JPanel pan0 = new JPanel();
         add(pan0);
         pan0.add(labelAdresse);
@@ -57,7 +76,10 @@ public class Panneau extends JPanel {
         boutonEnvoyer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Envoyer();
+                if(Connecte)
+                {
+                    Envoyer();
+                }
             }
         });
         JPanel pan2 = new JPanel();
@@ -71,7 +93,9 @@ public class Panneau extends JPanel {
         boutonConnexion.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Connexion();
+                if (!Connecte) {
+                    Connexion();
+                }
             }
         });
 
@@ -79,7 +103,25 @@ public class Panneau extends JPanel {
         boutonQuitter.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.exit(0);
+
+                try
+                {
+                    if(Connecte)
+                    {
+                        writer.println(UserName + " vient de se deconnecter");
+                        writer.flush();
+                        reader.close();
+                        socket.close();
+                        writer.close();
+                        Connecte = false;
+
+                    }
+                    System.exit(0);
+                }
+                catch(IOException s)
+                {
+
+                }
             }
         });
 
@@ -95,11 +137,17 @@ public class Panneau extends JPanel {
             @Override
             protected Object doInBackground() throws Exception {
                 try{
-                    UserName =  fieldPseudo.getText();
+                    if(!isAllWhitespace(fieldPseudo.getText()))
+                        UserName =  fieldPseudo.getText();
+                    else
+                        UserName = Inet4Address.getLocalHost().getHostAddress();
                     socket = new Socket(fieldAdresse.getText(), 50000);
                     writer = new PrintWriter(
                             new OutputStreamWriter(
                                     socket.getOutputStream() ));
+
+                    if(!ResterConnecter)
+                        socket.setSoTimeout(timeout);
 
                     reader = new BufferedReader(
                             new InputStreamReader(
@@ -108,9 +156,11 @@ public class Panneau extends JPanel {
                     writer.println(UserName + " vient de se connecter");
                     writer.flush();
                     listen();
+
                 }
                 catch(IOException ioe)
                 {
+                    zoneMessages.append("Le serveur n'est pas en marche ou l'adresse est invalide" + "\n");
                    return false;
                 }
                 return true;
@@ -127,20 +177,24 @@ public class Panneau extends JPanel {
             protected Object doInBackground() throws Exception {
                 try{
                     String s;
-                    for(int i = 0; i < 1000; i++){
+                    while(Connecte){
                         zoneMessages.insert(reader.readLine() + "\n", zoneMessages.getText().length());
                         zoneMessages.setCaretPosition(zoneMessages.getText().length());
-                        Thread.sleep(1000);
                     }
-                    writer.close();
-                    reader.close();
-                    try                 { socket.close();      }
-                    catch (Exception e) { e.printStackTrace(); }
-                    System.err.println("Closed client socket");
                 }
                 catch(IOException ioe)
                 {
-                    System.err.println(ioe.getMessage());
+                    writer.println(UserName + " vient de se deconnecter" + "\n");
+                    writer.flush();
+                    zoneMessages.insert(UserName + " vient de se deconnecter" + "\n", zoneMessages.getText().length());
+                    zoneMessages.setCaretPosition(zoneMessages.getText().length());
+                    writer.close();
+                    reader.close();
+                    Connecte = false;
+
+                    try { socket.close();
+                    }
+                    catch (Exception e) { e.printStackTrace(); }
                     return false;
                 }
                 return true;
@@ -150,18 +204,31 @@ public class Panneau extends JPanel {
     }
 
     private void Envoyer() {
-        SwingWorker worker = new SwingWorker() {
-            @Override
-            protected Object doInBackground() throws Exception {
-                writer.println(UserName+ ": " + fieldTexte.getText());
-                writer.flush();
-                fieldTexte.setText("");
-                fieldTexte.requestFocusInWindow();
-                return true;
-            }
-        };
 
 
-        worker.execute();
+            SwingWorker worker = new SwingWorker() {
+                @Override
+                protected Object doInBackground() throws Exception {
+                    if (!isAllWhitespace(fieldTexte.getText())) {
+                        writer.println(UserName + ": " + fieldTexte.getText());
+                        writer.flush();
+                        fieldTexte.setText("");
+                        fieldTexte.requestFocusInWindow();
+                    }
+                    return true;
+                }
+            };
+            worker.execute();
+    }
+
+    boolean isAllWhitespace(String s)
+    {
+        boolean isAllWhitespace = true;
+        for (int i = 0; i < s.length(); ++i)
+        {
+            if (!Character.isWhitespace(s.charAt(i)))
+                isAllWhitespace = false;
+        }
+        return isAllWhitespace;
     }
 }
