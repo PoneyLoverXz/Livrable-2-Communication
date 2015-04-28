@@ -95,9 +95,7 @@ public class Panneau extends JPanel {
             @Override
             protected Object doInBackground() throws Exception {
                 try{
-                    writer = new PrintWriter(
-                            new OutputStreamWriter(
-                                    socket.getOutputStream() ));
+
                     writer.println("[" + UserName + "]:" + fieldTexte.getText());
                     fieldTexte.setText("");
                     fieldTexte.requestFocusInWindow();
@@ -138,11 +136,15 @@ public class Panneau extends JPanel {
                 try{
                     UserName =  fieldPseudo.getText();
                     socket = new Socket("127.0.0.1", 50000);
+                    writer = new PrintWriter(
+                            new OutputStreamWriter(
+                                    socket.getOutputStream() ));
 
                     reader = new BufferedReader(
                             new InputStreamReader(
                                     socket.getInputStream() ));
-                    zoneMessages.append(reader.readLine());
+                    Panneau p = new Panneau();
+                    p.listen();
                 }
                 catch(IOException ioe)
                 {
@@ -169,6 +171,32 @@ public class Panneau extends JPanel {
 
 
         worker.execute();
+    }
+
+    private void listen() {
+        SwingWorker worker = new SwingWorker() {
+            @Override
+            protected Object doInBackground() throws Exception {
+                try{
+                    String s;
+                    while ((s = reader.readLine()) != null) {
+                        zoneMessages.insert(s + "\n", zoneMessages.getText().length());
+                        zoneMessages.setCaretPosition(zoneMessages.getText().length());
+                    }
+                    writer.close();
+                    reader.close();
+                    try                 { socket.close();      }
+                    catch (Exception e) { e.printStackTrace(); }
+                    System.err.println("Closed client socket");
+                }
+                catch(IOException ioe)
+                {
+                    System.err.println(ioe.getMessage());
+                    return false;
+                }
+                return true;
+            }
+        };
     }
 
 }
