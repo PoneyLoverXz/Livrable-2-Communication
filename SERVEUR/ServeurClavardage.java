@@ -10,11 +10,11 @@ public class ServeurClavardage
 		Socket client = null;
 		ServerSocket socketServeur = null;
 		boolean enService = true;
-	
 		try
 		{
 			//Étape 1 : Création du socket serveur
 			socketServeur = new ServerSocket (Port);
+            socketServeur.setReceiveBufferSize(2);
 			socketServeur.setSoTimeout(1000);
 			//Étape 2 : Attente de la connexion
 			System.out.println("Serveur Clavardage en attente d'une connexion");
@@ -26,36 +26,32 @@ public class ServeurClavardage
 			ter.start();
 			
 			// Laisser le serveur en marche tant que l'utilisateur n'a pas confirmer qu'il veut l'éteindre
-			while(enService)
+			while(ter.isAlive())
 			{
-				if(!ter.isAlive())
-				   enService = false;
-				else
-				{
-					// Connexion d'un client
-				   try
-				   {
-					  client = socketServeur.accept();
-					  Connexion connexion = new Connexion(client);
-					  Thread t = new Thread( connexion );
-					  t.setDaemon(true);
-					  t.start();
-				   }
-				   catch(SocketTimeoutException s)
-				   {
-					   // Le client n'est plus actif
-					   if(!s.getMessage().equals("Accept timed out"))
-					   {
-							client.close();
-							//t.interrupt();
-							System.out.println("Client deconnecte");
-						}
-				   }
-				}
+               try
+               {
+                client = socketServeur.accept();
+                Connexion connexion = new Connexion(client);
+                Thread t = new Thread( connexion );
+                t.setDaemon(true);
+                t.start();
+               }
+               catch(SocketTimeoutException s)
+               {
+                   // Le client n'est plus actif
+                   if(!s.getMessage().equals("Accept timed out"))
+                   {
+                        client.close();
+                        //t.interrupt();
+                        System.out.println("Client deconnecte");
+                    }
+               }
 			}	
 			// Fermer le client
          if(client != null)
+		 {
             client.close();
+		}
 		
 		// Fermer les Sockets
 		 socketServeur.close();

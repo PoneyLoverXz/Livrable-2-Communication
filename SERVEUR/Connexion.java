@@ -7,19 +7,21 @@ public class Connexion implements Runnable
 	// Variables Client
 	public Socket Client;
     public static ArrayList<Socket> Clients = new ArrayList<Socket>();
+	public static int ClientMax = 5;
 	
 	// Concstructeur
 	public Connexion(Socket client)
 	{
-		// Regarder le nombre de client connecter pour ne pas exceder la capacité de 5
+		// Regarder le nombre de client connecter pour ne pas exceder la capacitï¿½ de 5
 	  Client = client;
-	  if(Clients.size() > 4)
-	  {
-		System.out.println("Le client ne peut se connecter");
-		Client = null;
-	  }
-	  else
-		Clients.add(Client);
+        if(Clients.size() > ClientMax)
+        {
+            Client = null;
+        }
+        else
+        {
+            Clients.add(Client);
+        }
 	}
 	
 	// Run
@@ -34,7 +36,7 @@ public class Connexion implements Runnable
 				PrintWriter writer = null;
 				BufferedReader reader = null;
 				
-				//Étape 3 : Obtention des flux
+				//ï¿½tape 3 : Obtention des flux
 				writer = new PrintWriter(
 							new OutputStreamWriter(
 								Client.getOutputStream() ));
@@ -46,7 +48,7 @@ public class Connexion implements Runnable
 				boolean fini = false;
 				String ligne = null;
 				 
-				 // Attendre la lecture ou l'écriture tant que le client est connecté
+				 // Attendre la lecture ou l'ï¿½criture tant que le client est connectï¿½
 				while (!fini)
 				{
 					ligne = reader.readLine();
@@ -66,7 +68,7 @@ public class Connexion implements Runnable
 					}
 				}	
 				
-				//Étape 5 : Fermeture des flux
+				//ï¿½tape 5 : Fermeture des flux
 				writer.close();
 				reader.close();
 				Client.close();
