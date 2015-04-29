@@ -108,7 +108,7 @@ public class Panneau extends JPanel {
                 {
                     if(Connecte)
                     {
-                        writer.println(UserName + " vient de se deconnecter");
+                        writer.println(UserName + " vient de quitter la conversation.");
                         writer.flush();
                         reader.close();
                         socket.close();
@@ -155,7 +155,7 @@ public class Panneau extends JPanel {
                     Connecte = true;
                     writer.println(UserName + " vient de se connecter");
                     writer.flush();
-                    listen();
+                    Lire();
 
                 }
                 catch(IOException ioe)
@@ -171,7 +171,7 @@ public class Panneau extends JPanel {
         worker.execute();
     }
 
-    private void listen() {
+    private void Lire() {
         SwingWorker worker = new SwingWorker() {
             @Override
             protected Object doInBackground() throws Exception {
@@ -184,9 +184,9 @@ public class Panneau extends JPanel {
                 }
                 catch(IOException ioe)
                 {
-                    writer.println(UserName + " vient de se deconnecter" + "\n");
+                    writer.println(UserName + " vient de quitter la conversation" + "\n");
                     writer.flush();
-                    zoneMessages.insert(UserName + " vient de se deconnecter" + "\n", zoneMessages.getText().length());
+                    zoneMessages.insert(UserName + " vient de quitter la conversation" + "\n", zoneMessages.getText().length());
                     zoneMessages.setCaretPosition(zoneMessages.getText().length());
                     writer.close();
                     reader.close();
