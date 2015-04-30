@@ -90,7 +90,7 @@ public class Panneau extends JPanel {
         add(pan2);
 
         // rangée 3
-        JButton boutonConnexion  = new JButton("Connecter");
+        JButton boutonConnexion  = new JButton("Connecter/Deconnecter");
         boutonConnexion.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

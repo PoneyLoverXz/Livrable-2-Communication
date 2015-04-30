@@ -7,7 +7,7 @@ public class Connexion implements Runnable
 	// Variables Client
 	public Socket Client;
     public static ArrayList<Socket> Clients = new ArrayList<Socket>();
-	public static int ClientMax = 5;
+	public static int ClientMax = 2;
 	
 	// Concstructeur
 	public Connexion(Socket client)
